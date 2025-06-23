@@ -1,4 +1,4 @@
 # Define the namespace for CUP-ECS packages
 repo:
-  namespace: cupecs.packages
+  namespace: cupecs.internal
   api: v2.0 # Or newer
