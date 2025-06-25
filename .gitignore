@@ -1,2 +1,4 @@
 # Ignore pycache files in package directories
-**/__pycache__/
+__pycache__/
+*.py[cod]
+*$py.class
