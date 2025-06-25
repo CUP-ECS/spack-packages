@@ -1,0 +1,2 @@
+# Ignore pycache files in package directories
+**/__pycache__/
