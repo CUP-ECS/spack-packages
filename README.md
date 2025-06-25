@@ -15,7 +15,7 @@ repos:
 ```
 
 ## Package Creation:
-Create a directory with the same of your package in `spack_pkgs/spack_repo/cupecs/packages` and place your `package.py` file in that directory.
+Create a directory with the name of your package in `spack_pkgs/spack_repo/cupecs/packages` and place your `package.py` file in that directory.
 
 For packages that include `CMakePackage`, `CudaPackage`, and/or `ROCmPackage`, you must import them using the following code in the `packages.py` file:
 ```
