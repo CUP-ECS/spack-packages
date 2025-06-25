@@ -3,7 +3,7 @@ CUP-ECS internal spack package respository
 
 ## Setup:
 
-#### To register this repository, add the following lines to your ~/.spack/repos.yaml file:
+#### You must register this repository by adding the following lines to your ~/.spack/repos.yaml file:
 ```
 repos:
   cupecs:
@@ -11,7 +11,10 @@ repos:
     destination: ~/cupecs # Modify to where you want this repository cloned
 ```
 
-#### For packages that include `CMakePackage`, `CudaPackage`, and/or `ROCmPackage`, you must import them using the following code in the `packages.py` file:
+## Package Creation:
+Create a directory with the same of your package in `spack_pkgs/spack_repo/cupecs/packages` and place your `package.py` file in that directory.
+
+For packages that include `CMakePackage`, `CudaPackage`, and/or `ROCmPackage`, you must import them using the following code in the `packages.py` file:
 ```
 from spack_repo.builtin.build_systems.cmake import CMakePackage
 from spack_repo.builtin.build_systems.cuda import CudaPackage
