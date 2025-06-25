@@ -1,5 +1,5 @@
 # pack-packages.git/spack-repo-index.yaml
 repo_index:
   paths:
-  - spack_pkgs/spack_repo/cup-ecs/internal
-  - spack_pkgs/spack_repo/cup-ecs/external
+  - spack_pkgs/spack_repo/cupecs/internal
+  - spack_pkgs/spack_repo/cupecs/external
