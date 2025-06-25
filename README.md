@@ -6,6 +6,7 @@ CUP-ECS internal spack package respository.
   1. Clone spack from https://github.com/spack/spack.
   2. Set up your environment so that the ~/.spack directory is created.
   3. Register this repository by adding the following lines to your ~/.spack/repos.yaml file:
+  4. Use spack normally. Spack will automatically find libraries included in this repository.
 ```
 repos:
   cupecs:
