@@ -3,5 +3,5 @@
 repos:
   cupecs:
     git: git@github.com:CUP-ECS/spack-packages.git
-    destination: ~/cup-ecs
+    destination: ~/cupecs # Modify to where you want the repository cloned
 ```
