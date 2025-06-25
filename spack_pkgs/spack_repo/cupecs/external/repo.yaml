@@ -1,6 +1,0 @@
-# Define the namespace for development/bugfixing of packages
-# external to cup-ecs
-repo:
-  namespace: cupecs.external
-  api: v2.0 # Or newer
-  
