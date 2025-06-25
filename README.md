@@ -1,5 +1,5 @@
 ## About:
-CUP-ECS internal spack package respository
+CUP-ECS internal spack package respository.
 
 ## Setup:
 
