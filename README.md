@@ -5,7 +5,7 @@ CUP-ECS internal spack package respository.
 
   1. Clone spack from https://github.com/spack/spack.
   2. Set up your environment so that the ~/.spack directory is created.
-  3. Find the `repos.yaml` file in the `~/.spack` directory. If you are on a cluster, the `repos.yaml` file will be in `~./spack/{cluster name}/`, for example on tioga, `~./spack/tioga/`. Sometimes spack does not create the repos.yaml file for you. If so, create it yourself in the correct directory.
+  3. Find the `repos.yaml` file in the `~/.spack` directory. If you are on a cluster, the `repos.yaml` file will be in `~./spack/{cluster name}/`, for example on tioga, `~./spack/tioga/`. Sometimes spack does not create the `repos.yaml` file for you. If so, create it yourself in the correct directory.
   4. Register this repository by adding the following lines to the `repos.yaml` file:
 ```
 repos:
