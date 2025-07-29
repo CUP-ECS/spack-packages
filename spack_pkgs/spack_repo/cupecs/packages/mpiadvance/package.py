@@ -48,15 +48,22 @@ class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
     # informtion to the packages we depend on
     # variant("cuda", default=False, description="Use CUDA support from subpackages")
     # variant("openmp", default=False, description="Use OpenMP support from subpackages")
+    variant("tests", default=False, description="Build tests")
 
     # MPI dependencies
     depends_on("mpi")
+    
+    
+    
     with when("+cuda"):
         depends_on("mpich +cuda", when="^[virtuals=mpi] mpich")
         depends_on("mvapich +cuda", when="^[virtuals=mpi] mvapich")
         depends_on("mvapich2 +cuda", when="^[virtuals=mpi] mvapich2")
         depends_on("mvapich2-gdr +cuda", when="^[virtuals=mpi] mvapich2-gdr")
         depends_on("openmpi +cuda", when="^[virtuals=mpi] openmpi")
+        
+       
+                    
 
     with when("+rocm"):
         depends_on("mpich +rocm", when="^[virtuals=mpi] mpich")
@@ -77,7 +84,13 @@ class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
     # CMake specific build functions
     def cmake_args(self):
         args = []
-
+        print("CHECK!!!!!!!")
+        cuda_arch_list = spec.varians["cuda_arch"].value
+        print("CUDA VERSION ", cuda_arch_list)
+        if self.spec.satisfies("+tests"):
+            args.append("-DBUILD_TESTS=ON")
+        
+        
         # Use hipcc as the c compiler if we are compiling for rocm. Doing it this way
         # keeps the wrapper insted of changeing CMAKE_CXX_COMPILER keeps the spack wrapper
         # and the rpaths it sets for us from the underlying spec.
