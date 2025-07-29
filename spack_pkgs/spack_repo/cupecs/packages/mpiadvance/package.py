@@ -25,18 +25,20 @@ from spack_repo.builtin.build_systems.rocm import ROCmPackage
 
 from spack.package import *
 
+
+
+
 class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
     """Locality-aware optimizations for standard MPI collectives as well as neighborhood collectives."""
 
     homepage = "https://github.com/mpi-advance"
-    git = "https://github.com/mpi-advance/locality_aware.git"
+    git = "git@github.com:mpi-advance/mpi-advance.git"
 
     maintainers("bienz2", "JStewart28")
 
     license("BSD-3-Clause")
-
-    version("1.0", commit="ecfb55c159c5ee6cdc93d1c039d443368fae5ab7")
-    version("master", branch="master")
+    
+    version("main", branch="experimental", submodules=True)
     
     depends_on("c", type="build")
     depends_on("cxx", type="build")
@@ -46,9 +48,17 @@ class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
 
     # Variants are primarily backends to build on GPU systems and pass the right
     # informtion to the packages we depend on
-    # variant("cuda", default=False, description="Use CUDA support from subpackages")
-    # variant("openmp", default=False, description="Use OpenMP support from subpackages")
+    variant("cuda", default=False, description="Use CUDA support from subpackages")
+    variant("openmp", default=False, description="Use OpenMP support from subpackages")
+    
+    # varients for disabling various sublibraries
+    variant("pcl", default=True, description="Build MPIPCL library")
+    variant("st",  default=True, description="Build Stream-triggering library")
+    variant("la",  default=True, description="Build Stream-triggering library")
+    variant("tests", default=False, description="Build examples and test programs")
+    # variant("+cuda", default=True, description="Build MPIPCL library")
 
+    
     # MPI dependencies
     depends_on("mpi")
     with when("+cuda"):
@@ -74,16 +84,60 @@ class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
     # conflicts("^spectrum-mpi", when="^cuda@11.3:") # cuda-aware spectrum is broken with cuda 11.3:
 
 
+    
     # CMake specific build functions
     def cmake_args(self):
         args = []
-
+        print("!!--!!")
+        args.append("-DSPACK=ON")
+        #Parse libraries NOT to be installed. 
+        if self.spec.satisfies("+pcl"):
+            print("PC SET")
+            args.append("-DMPIA_PC=ON")
+        else:
+            print("PC NOT SET")
+            
+        if self.spec.satisfies("+st"):
+            print("ST SET")
+            args.append("-DMPIA_ST=ON")
+            
+        else:
+            print("ST NOT SET") 
+            
+        if self.spec.satisfies("+la"):
+            print("LA SET")
+            args.append("-DMPIA_LA=ON")
+            if self.spec.satisfies("+cuda"):
+                args.append("-DUSE_CUDA=ON")
+            
+        else:
+            print("LA NOT SET")   
+        
+        #add in tests if requested
+        if self.spec.satisfies("+tests"):
+            print("TESTS TO BE BUILT")
+            args.append("-DBUILD_EXAMPLES=ON")
+            args.append("-DENABLE_UNIT_TESTS=ON")
+        args.append("-DSPACK=ON")
+        
+        # If Cuda add flags to activate cuda build options
+        if self.spec.satisfies("+cuda"):
+            print("BUILDING CUDA SUPPORT")
+            if self.spec.satisfies("la"):
+                args.append("-DUSE_CUDA=ON")
+            if self.spec.satisfies("st"):
+                args.append("-DUSE_CUDA_BACKEND=ON")
+          
+        
         # Use hipcc as the c compiler if we are compiling for rocm. Doing it this way
         # keeps the wrapper insted of changeing CMAKE_CXX_COMPILER keeps the spack wrapper
         # and the rpaths it sets for us from the underlying spec.
         if self.spec.satisfies("+rocm"):
             env["SPACK_CXX"] = self.spec["hip"].hipcc
-
+            if self.spec.satisfies("la"):
+                args.append("-DUSE_HIP=ON")
+            if self.spec.satisfies("st"):
+                args.append("-DUSE_HIP_BACKEND=ON")
         # If we're building with cray mpich, we need to make sure we get the GTL library for
         # gpu-aware MPI
         if self.spec.satisfies("+rocm ^cray-mpich"):
@@ -96,4 +150,7 @@ class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
             args.append(
                 "-DCMAKE_EXE_LINKER_FLAGS=-Wl,-rpath={0} -L{0} -lmpi_gtl_cuda".format(gtl_dir)
             )
+        
+       
+        
         return args
