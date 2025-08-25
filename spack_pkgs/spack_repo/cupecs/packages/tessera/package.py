@@ -8,11 +8,11 @@ from spack_repo.builtin.build_systems.rocm import ROCmPackage
 
 from spack.package import *
 
-class Numesh(CMakePackage, CudaPackage, ROCmPackage):
-    """Locality-aware optimizations for standard MPI collectives as well as neighborhood collectives."""
+class Tessera(CMakePackage, CudaPackage, ROCmPackage):
+    """Distributed and GPU-accelerated unstructured mesh library"""
 
-    homepage = "https://github.com/JStewart28/numesh"
-    git = "https://github.com/JStewart28/numesh.git"
+    homepage = "https://github.com/JStewart28/Tessera.git"
+    git = "https://github.com/JStewart28/Tessera.git"
 
     maintainers("JStewart28")
 
@@ -45,6 +45,15 @@ class Numesh(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("mpich +rocm", when="^[virtuals=mpi] mpich")
         depends_on("mvapich2-gdr +rocm", when="^[virtuals=mpi] mvapich2-gdr")
     
+    # Propagate cuda architectures down to Kokkos and optional submodules
+    for arch in CudaPackage.cuda_arch_values:
+        cuda_dep = "+cuda cuda_arch={0}".format(arch)
+        depends_on("kokkos {0}".format(cuda_dep), when=cuda_dep)
+
+    for arch in ROCmPackage.amdgpu_targets:
+        rocm_dep = "+rocm amdgpu_target={0}".format(arch)
+        depends_on("kokkos {0}".format(rocm_dep), when=rocm_dep)
+
     conflicts("+cuda", when="cuda_arch=none")
     conflicts("+rocm", when="amdgpu_target=none")
     
@@ -52,8 +61,8 @@ class Numesh(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("vtk @9.4.1 +mpi")
     
     # Cabana depdendency
-    depends_on("cabana @0.7.0 +grid +mpi +arborx", when="@develop")
-    depends_on("cabana @0.7.0 +grid +mpi +arborx", when="@master")
+    depends_on("cabana @master +grid +mpi", when="@develop")
+    depends_on("cabana @master +grid +mpi", when="@master")
 
     # If we're using CUDA or ROCM, require MPIs be GPU-aware
     conflicts("mpich ~cuda", when="+cuda")
