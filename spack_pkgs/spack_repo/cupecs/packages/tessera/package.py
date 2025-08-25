@@ -13,19 +13,44 @@ class Tessera(CMakePackage, CudaPackage, ROCmPackage):
 
     homepage = "https://github.com/JStewart28/Tessera.git"
     git = "https://github.com/JStewart28/Tessera.git"
+    url = "https://github.com/JStewart28/Tessera/archive/refs/tags/v0.1.0.tar.gz"
 
     maintainers("JStewart28")
 
     license("BSD-3-Clause")
 
     version("develop", branch="develop", submodules=True)
-    version("master", branch="master", submodules=True)
-
+    version("master", branch="main", submodules=True)
+    version("0.1.0", tag="v0.1.0", submodules=True)
+    
+    # Backend variants to build on GPU systems and pass the right
+    # informtion to the packages we depend on
+    variant("cuda", default=False, description="Use CUDA support from subpackages")
+    variant("openmp", default=False, description="Use OpenMP support from subpackages")
+    
+    # Library-specific variants
     variant("testing", default=False, description="Build unit tests")
     variant("examples", default=False, description="Build tutorial examples")
+    #
     
     depends_on("c", type="build")
     depends_on("cxx", type="build")
+
+    # Kokkos
+    depends_on("kokkos @4:")
+    depends_on("kokkos +cuda +cuda_lambda +cuda_constexpr", when="+cuda")
+    depends_on("kokkos +rocm", when="+rocm")
+    depends_on("kokkos +wrapper", when="+cuda%gcc")
+
+    # Cabana: propagate CUDA and AMD GPU targets to Cabana
+    depends_on("cabana@master +mpi+grid")
+    for cuda_arch in CudaPackage.cuda_arch_values:
+        depends_on("cabana +cuda cuda_arch=%s" % cuda_arch, when="+cuda cuda_arch=%s" % cuda_arch)
+    for amdgpu_value in ROCmPackage.amdgpu_targets:
+        depends_on(
+            "cabana +rocm amdgpu_target=%s" % amdgpu_value,
+            when="+rocm amdgpu_target=%s" % amdgpu_value
+        )
     
     # Google test
     # depends_on("googletest", type="build")
@@ -62,10 +87,6 @@ class Tessera(CMakePackage, CudaPackage, ROCmPackage):
     
     # VTK dependencies
     depends_on("vtk @9.4.1 +mpi")
-    
-    # Cabana depdendency
-    depends_on("cabana @master +grid +mpi", when="@develop")
-    depends_on("cabana @master +grid +mpi", when="@master")
 
     # If we're using CUDA or ROCM, require MPIs be GPU-aware
     conflicts("mpich ~cuda", when="+cuda")
@@ -81,25 +102,47 @@ class Tessera(CMakePackage, CudaPackage, ROCmPackage):
         filter_file("LANGUAGES CXX", "LANGUAGES C CXX", "CMakeLists.txt")
 
     # CMake specific build functions
+    # CMake specific build functions
     def cmake_args(self):
-        options = [self.define_from_variant("BUILD_SHARED_LIBS", "shared")]
-        
-        enable = ["TESTING", "EXAMPLES", "Serial", "OpenMP", "Cuda"]
-        require = ["MPI", "CABANA", "VTK"]
 
-        for category, cname in zip([enable, require], ["ENABLE", "REQUIRE"]):
+        # options = [self.define_from_variant("BUILD_SHARED_LIBS", "shared")]
+        options = []
+        
+        enable = ["TESTING", "EXAMPLES"]
+        # require = ["MPI", "CABANA"]
+
+        for category, cname in zip([enable], ["ENABLE"]):
             for var in category:
                 cbn_option = "Tessera_{0}_{1}".format(cname, var)
                 options.append(self.define_from_variant(cbn_option, var.lower()))
 
         # Attempt to disable find_package() calls for disabled options(if option supports it):
-        for var in require:
-            if not self.spec.satisfies("+" + var.lower()):
-                options.append(self.define("CMAKE_DISABLE_FIND_PACKAGE_" + var, "ON"))
+        # for var in require:
+            # if not self.spec.satisfies("+" + var.lower()):
+                # options.append(self.define("CMAKE_DISABLE_FIND_PACKAGE_" + var, "ON"))
 
         # Use hipcc for HIP.
         if self.spec.satisfies("+rocm"):
             options.append(self.define("CMAKE_CXX_COMPILER", self.spec["hip"].hipcc))
+
+        # Use hipcc as the c compiler if we are compiling for rocm. Doing it this way
+        # keeps the wrapper insted of changeing CMAKE_CXX_COMPILER keeps the spack wrapper
+        # and the rpaths it sets for us from the underlying spec.
+        if self.spec.satisfies("+rocm"):
+            env["SPACK_CXX"] = self.spec["hip"].hipcc
+
+        # If we're building with cray mpich, we need to make sure we get the GTL library for
+        # gpu-aware MPI
+        if self.spec.satisfies("+rocm ^cray-mpich"):
+            gtl_dir = join_path(self.spec["cray-mpich"].prefix, "..", "..", "..", "gtl", "lib")
+            args.append(
+                "-DCMAKE_EXE_LINKER_FLAGS=-Wl,-rpath={0} -L{0} -lmpi_gtl_hsa".format(gtl_dir)
+            )
+        elif self.spec.satisfies("+cuda ^cray-mpich"):
+            gtl_dir = join_path(self.spec["cray-mpich"].prefix, "..", "..", "..", "gtl", "lib")
+            args.append(
+                "-DCMAKE_EXE_LINKER_FLAGS=-Wl,-rpath={0} -L{0} -lmpi_gtl_cuda".format(gtl_dir)
+            )
 
         # Use hipcc as the c compiler if we are compiling for rocm. Doing it this way
         # keeps the wrapper insted of changeing CMAKE_CXX_COMPILER keeps the spack wrapper

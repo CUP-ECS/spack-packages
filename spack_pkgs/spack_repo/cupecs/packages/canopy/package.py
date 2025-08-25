@@ -5,6 +5,7 @@
 from spack_repo.builtin.build_systems.cmake import CMakePackage
 from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack_repo.builtin.build_systems.rocm import ROCmPackage
+from spack_repo.builtin.packages.kokkos.package import Kokkos
 
 from spack.package import *
 
@@ -13,6 +14,7 @@ class Canopy(CMakePackage, CudaPackage, ROCmPackage):
 
     homepage = "https://github.com/JStewart28/Canopy.git"
     git = "https://github.com/JStewart28/Canopy.git"
+    url = "https://github.com/JStewart28/Canopy/archive/refs/tags/v0.1.0.tar.gz"
 
     maintainers("JStewart28")
 
@@ -20,15 +22,43 @@ class Canopy(CMakePackage, CudaPackage, ROCmPackage):
 
     version("develop", branch="develop", submodules=True)
     version("master", branch="master", submodules=True)
+    version("0.1.0", tag="v0.1.0")
 
+    _kokkos_backends = Kokkos.devices_variants
+    for _backend in _kokkos_backends:
+        _deflt, _descr = _kokkos_backends[_backend]
+        variant(_backend.lower(), default=_deflt, description=_descr)
+
+    # Backend variants to build on GPU systems and pass the right
+    # informtion to the packages we depend on
+    variant("cuda", default=False, description="Use CUDA support from subpackages")
+    variant("openmp", default=False, description="Use OpenMP support from subpackages")
+    
+    # Library-specific variants
     variant("testing", default=False, description="Build unit tests")
     variant("examples", default=False, description="Build tutorial examples")
     
     depends_on("c", type="build")
     depends_on("cxx", type="build")
+
+    # Kokkos
+    depends_on("kokkos @4:")
+    depends_on("kokkos +cuda +cuda_lambda +cuda_constexpr", when="+cuda")
+    depends_on("kokkos +rocm", when="+rocm")
+    depends_on("kokkos +wrapper", when="+cuda%gcc")
+
+    # Cabana: propagate CUDA and AMD GPU targets to Cabana
+    depends_on("cabana@master +mpi+grid")
+    for cuda_arch in CudaPackage.cuda_arch_values:
+        depends_on("cabana +cuda cuda_arch=%s" % cuda_arch, when="+cuda cuda_arch=%s" % cuda_arch)
+    for amdgpu_value in ROCmPackage.amdgpu_targets:
+        depends_on(
+            "cabana +rocm amdgpu_target=%s" % amdgpu_value,
+            when="+rocm amdgpu_target=%s" % amdgpu_value
+        )
     
     # Google test
-    depends_on("googletest", type="build")
+    depends_on("googletest", type="build", when="+testing")
 
     # Variants are primarily backends to build on GPU systems and pass the right
     # informtion to the packages we depend on
@@ -59,10 +89,6 @@ class Canopy(CMakePackage, CudaPackage, ROCmPackage):
 
     conflicts("+cuda", when="cuda_arch=none")
     conflicts("+rocm", when="amdgpu_target=none")
-        
-    # Cabana depdendency
-    depends_on("cabana @master +grid +mpi", when="@develop")
-    depends_on("cabana @master +grid +mpi", when="@master")
 
     # If we're using CUDA or ROCM, require MPIs be GPU-aware
     conflicts("mpich ~cuda", when="+cuda")
@@ -80,20 +106,21 @@ class Canopy(CMakePackage, CudaPackage, ROCmPackage):
     # CMake specific build functions
     def cmake_args(self):
 
-        options = [self.define_from_variant("BUILD_SHARED_LIBS", "shared")]
+        # options = [self.define_from_variant("BUILD_SHARED_LIBS", "shared")]
+        options = []
         
-        enable = ["TESTING", "EXAMPLES", "Serial", "OpenMP", "Cuda"]
-        require = ["MPI", "CABANA"]
+        enable = ["TESTING", "EXAMPLES"]
+        # require = ["MPI", "CABANA"]
 
-        for category, cname in zip([enable, require], ["ENABLE", "REQUIRE"]):
+        for category, cname in zip([enable], ["ENABLE"]):
             for var in category:
                 cbn_option = "Canopy_{0}_{1}".format(cname, var)
                 options.append(self.define_from_variant(cbn_option, var.lower()))
 
         # Attempt to disable find_package() calls for disabled options(if option supports it):
-        for var in require:
-            if not self.spec.satisfies("+" + var.lower()):
-                options.append(self.define("CMAKE_DISABLE_FIND_PACKAGE_" + var, "ON"))
+        # for var in require:
+            # if not self.spec.satisfies("+" + var.lower()):
+                # options.append(self.define("CMAKE_DISABLE_FIND_PACKAGE_" + var, "ON"))
 
         # Use hipcc for HIP.
         if self.spec.satisfies("+rocm"):
