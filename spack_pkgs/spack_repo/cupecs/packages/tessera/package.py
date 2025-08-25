@@ -20,6 +20,9 @@ class Tessera(CMakePackage, CudaPackage, ROCmPackage):
 
     version("develop", branch="develop", submodules=True)
     version("master", branch="master", submodules=True)
+
+    variant("testing", default=False, description="Build unit tests")
+    variant("examples", default=False, description="Build tutorial examples")
     
     depends_on("c", type="build")
     depends_on("cxx", type="build")
@@ -73,9 +76,30 @@ class Tessera(CMakePackage, CudaPackage, ROCmPackage):
     # conflicts("^spectrum-mpi", when="^cuda@11.3:") # cuda-aware spectrum is broken with cuda 11.3:
 
 
+    def patch(self):
+        # CMakeLists.txt tries to enable C when MPI is requsted, but too late:
+        filter_file("LANGUAGES CXX", "LANGUAGES C CXX", "CMakeLists.txt")
+
     # CMake specific build functions
     def cmake_args(self):
-        args = []
+        options = [self.define_from_variant("BUILD_SHARED_LIBS", "shared")]
+        
+        enable = ["TESTING", "EXAMPLES", "Serial", "OpenMP", "Cuda"]
+        require = ["MPI", "CABANA", "VTK"]
+
+        for category, cname in zip([enable, require], ["ENABLE", "REQUIRE"]):
+            for var in category:
+                cbn_option = "Tessera_{0}_{1}".format(cname, var)
+                options.append(self.define_from_variant(cbn_option, var.lower()))
+
+        # Attempt to disable find_package() calls for disabled options(if option supports it):
+        for var in require:
+            if not self.spec.satisfies("+" + var.lower()):
+                options.append(self.define("CMAKE_DISABLE_FIND_PACKAGE_" + var, "ON"))
+
+        # Use hipcc for HIP.
+        if self.spec.satisfies("+rocm"):
+            options.append(self.define("CMAKE_CXX_COMPILER", self.spec["hip"].hipcc))
 
         # Use hipcc as the c compiler if we are compiling for rocm. Doing it this way
         # keeps the wrapper insted of changeing CMAKE_CXX_COMPILER keeps the spack wrapper
@@ -95,4 +119,5 @@ class Tessera(CMakePackage, CudaPackage, ROCmPackage):
             args.append(
                 "-DCMAKE_EXE_LINKER_FLAGS=-Wl,-rpath={0} -L{0} -lmpi_gtl_cuda".format(gtl_dir)
             )
-        return args
+
+        return options
