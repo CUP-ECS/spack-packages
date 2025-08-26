@@ -41,8 +41,6 @@ class Cabanaghost(CMakePackage, CudaPackage, ROCmPackage):
 
     with when("+rocm"):
         depends_on("mpich +rocm", when="^[virtuals=mpi] mpich")
-        depends_on("mvapich +rocm", when="^[virtuals=mpi] mvapich")
-        depends_on("mvapich2 +rocm", when="^[virtuals=mpi] mvapich2")
         depends_on("mvapich2-gdr +rocm", when="^[virtuals=mpi] mvapich2-gdr")
         depends_on("openmpi +rocm", when="^[virtuals=mpi] openmpi")
 
