@@ -30,9 +30,9 @@ class Beatnik(CMakePackage, CudaPackage, ROCmPackage):
     variant("openmp", default=False, description="Use OpenMP support from subpackages")
 
     # Dependencies for all Beatnik versions
+    depends_on("c", type="build")
     depends_on("cxx", type="build")
-    depends_on("cc", type="build")
-
+    
     depends_on("mpi")
     with when("+cuda"):
         depends_on("mpich +cuda", when="^[virtuals=mpi] mpich")
@@ -58,6 +58,9 @@ class Beatnik(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("cabana @0.7.0 +grid +heffte +silo +hdf5 +mpi +arborx", when="@main")
     depends_on("cabana +cuda", when="+cuda")
     depends_on("cabana +rocm", when="+rocm")
+
+    # Tessera dependencies
+    depends_on("tessera@0.1.0", when="@develop")
 
     # Silo dependencies
     depends_on("silo @4.11:")
