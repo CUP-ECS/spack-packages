@@ -19,7 +19,7 @@ bash:$ spack repo ls
 [+] builtin    v2.2    ~/.spack/package_repos/fncqgg4/repos/spack_repo/builtin
 ```
   7. Follow the instructions in the README of [CUP-ECS/spack-externals](https://github.com/CUP-ECS/spack-externals) to tell Spack about libraries externally installed on the system you are using.
-  7. Use Spack normally. Spack will automatically find libraries included in this repository.
+  8. Use Spack normally. Spack will automatically find libraries included in this repository.
 
 
 ## Package Creation:
