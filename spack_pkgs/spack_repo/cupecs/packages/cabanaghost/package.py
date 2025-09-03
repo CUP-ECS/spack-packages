@@ -24,13 +24,7 @@ class Cabanaghost(CMakePackage, CudaPackage, ROCmPackage):
     version("develop", branch="develop")
     version("main", branch="main")
 
-    # Variants are primarily backends to build on GPU systems and pass the right
-    # informtion to the packages we depend on
-    variant("cuda", default=False, description="Use CUDA support from subpackages")
-    variant("rocm", default=False, description="Use ROCM support from subpackages")
-    variant("openmp", default=False, description="Use OpenMP support from subpackages")
-
-    # Dependencies for all CabanaGhost versions
+    # Dependencies for all CabanaGhost versions - we need cuda-aware MPI
     depends_on("mpi")
     with when("+cuda"):
         depends_on("mpich +cuda", when="^[virtuals=mpi] mpich")
