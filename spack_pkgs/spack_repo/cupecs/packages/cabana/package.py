@@ -136,7 +136,7 @@ class Cabana(CMakePackage, CudaPackage, ROCmPackage):
     def cmake_args(self):
         options = [self.define_from_variant("BUILD_SHARED_LIBS", "shared")]
 
-        enable = ["CAJITA", "TESTING", "EXAMPLES", "PERFORMANCE_TESTING"]
+        enable = ["CAJITA", "TESTING", "EXAMPLES", "PERFORMANCE_TESTING", "STREAM_COMM"]
         require = ["ALL", "ARBORX", "HEFFTE", "HYPRE", "SILO", "HDF5"]
 
         # These variables were removed in 0.3.0 (where backends are
