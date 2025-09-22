@@ -13,7 +13,6 @@ from spack.package import *
 class Cabanamd(CMakePackage, CudaPackage, ROCmPackage):
     """Cabana verstion of ExaMiniMD LAMMPS proxy."""
 
-
     homepage = "https://github.com/CUP-ECS/CabanaMD"
     git = "https://github.com/CUP-ECS/CabanaMD.git"
 
@@ -21,8 +20,8 @@ class Cabanamd(CMakePackage, CudaPackage, ROCmPackage):
 
     license("BSD-3-Clause")
 
+    version("master", branch="master")
     version("develop", branch="develop")
-    version("main", branch="main")
 
     # Dependencies for all CabanaMD versions - we need cuda-aware MPI
     depends_on("mpi")
