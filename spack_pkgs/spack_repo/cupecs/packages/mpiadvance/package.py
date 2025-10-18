@@ -55,12 +55,11 @@ class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("mpich +cuda", when="^[virtuals=mpi] mpich")
         depends_on("mvapich +cuda", when="^[virtuals=mpi] mvapich")
         depends_on("mvapich2 +cuda", when="^[virtuals=mpi] mvapich2")
-        depends_on("mvapich2-gdr +cuda", when="^[virtuals=mpi] mvapich2-gdr")
         depends_on("openmpi +cuda", when="^[virtuals=mpi] openmpi")
 
     with when("+rocm"):
         depends_on("mpich +rocm", when="^[virtuals=mpi] mpich")
-        depends_on("mvapich2-gdr +rocm", when="^[virtuals=mpi] mvapich2-gdr")
+        depends_on("openmpi +rocm", when="^[virtuals=mpi] openmpi")
     
     conflicts("+cuda", when="cuda_arch=none")
     conflicts("+rocm", when="amdgpu_target=none")
