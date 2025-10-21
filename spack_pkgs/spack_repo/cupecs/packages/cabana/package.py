@@ -63,12 +63,7 @@ class Cabana(CMakePackage, CudaPackage, ROCmPackage):
     for _version in _versions:
         _kk_version = _versions[_version]
         for _backend in _kokkos_backends:
-            if _kk_version == "-legacy" and _backend == "pthread":
-                _kk_spec = "kokkos-legacy+pthreads"
-            elif _kk_version == "-legacy" and _backend not in ["serial", "openmp", "cuda"]:
-                continue
-            # Handled separately by Cuda/ROCmPackage below
-            elif _backend == "cuda" or _backend == "hip":
+            if _backend == "cuda" or _backend == "hip":
                 continue
             else:
                 _kk_spec = "kokkos{0}+{1}".format(_kk_version, _backend)
@@ -99,7 +94,7 @@ class Cabana(CMakePackage, CudaPackage, ROCmPackage):
     # Dependencies for subpackages
     depends_on("all-library", when="@0.5.0:+all")
     depends_on("arborx", when="@0.3.0:+arborx")
-    depends_on("hypre-cmake@2.22.0:", when="@0.4.0:+hypre")
+    depends_on("hypre-cmake@2.22.0:", when="@0.4.0+hypre")
     depends_on("hypre-cmake@2.22.1:", when="@0.5.0:+hypre")
     depends_on("heffte@2.0.0", when="@0.4.0+heffte")
     depends_on("heffte@2.1.0", when="@0.5.0+heffte")

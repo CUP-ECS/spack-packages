@@ -28,6 +28,7 @@ class Cabanafluids(CMakePackage, CudaPackage, ROCmPackage):
     variant("cuda", default=False, description="Use CUDA support from subpackages")
     variant("rocm", default=False, description="Use ROCM support from subpackages")
     variant("openmp", default=False, description="Use OpenMP support from subpackages")
+    variant("hypre", default=False, description="Include support for hypre structured solver in addition to the included reference solver.")
 
     # Dependencies for all CabanaGhost versions
     depends_on("mpi")
@@ -51,6 +52,7 @@ class Cabanafluids(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("cabana @0.7.0: +grid +silo +hdf5 +mpi")
     depends_on("cabana +cuda", when="+cuda")
     depends_on("cabana +rocm", when="+rocm")
+    depends_on("cabana +hypre", when="+hypre")
 
     # Silo dependencies
     depends_on("silo @4.11:")
