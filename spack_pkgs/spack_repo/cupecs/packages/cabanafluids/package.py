@@ -49,7 +49,7 @@ class Cabanafluids(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("kokkos +wrapper", when="+cuda %gcc")
 
     # Cabana dependencies
-    depends_on("cabana @0.7.0: +grid +silo +hdf5 +mpi")
+    depends_on("cabana @0.7.0: +serial +threads +grid +silo +hdf5 +mpi")
     depends_on("cabana +cuda", when="+cuda")
     depends_on("cabana +rocm", when="+rocm")
     depends_on("cabana +hypre", when="+hypre")
