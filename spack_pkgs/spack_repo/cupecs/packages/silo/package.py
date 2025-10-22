@@ -2,6 +2,10 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
+import glob
+import os
+import re
+
 from spack_repo.builtin.build_systems.autotools import AutotoolsPackage
 
 from spack.package import *
@@ -212,6 +216,9 @@ class Silo(AutotoolsPackage):
         #     config_args.append(
         #         "--with-hdf5=%s,%s" % (spec["hdf5"].prefix.include, spec["hdf5"].prefix.lib)
         #     )
+        if "+hdf5" in spec:
+            hdf5_prefix = self.spec['hdf5'].prefix    
+            config_args.append(f"--with-hdf5={hdf5_prefix}")
 
         if "+silex" in spec:
             x = spec["libx11"]
@@ -233,10 +240,6 @@ class Silo(AutotoolsPackage):
             # or else the linker will not be able to find them
             config_args.append("LDFLAGS=-L/opt/cray/pe/lib64 -Wl,-rpath,/opt/cray/pe/lib64")
             config_args.append("CFLAGS=-I/opt/cray/pe/pmi/default/include")
-        
-        if "+hdf5" in spec:
-            hdf5_prefix = self.spec['hdf5'].prefix
-            config_args.append(f"--with-hdf5={hdf5_prefix}")
 
         return config_args
 
