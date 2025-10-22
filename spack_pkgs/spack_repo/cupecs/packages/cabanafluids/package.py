@@ -30,7 +30,7 @@ class Cabanafluids(CMakePackage, CudaPackage, ROCmPackage):
     variant("openmp", default=False, description="Use OpenMP support from subpackages")
     variant("hypre", default=False, description="Include support for hypre structured solver in addition to the included reference solver.")
 
-    # Dependencies for all CabanaGhost versions
+    # Dependencies for all CabanaFluids versions
     depends_on("mpi")
     with when("+cuda"):
         depends_on("mpich +cuda", when="^[virtuals=mpi] mpich")
@@ -49,7 +49,7 @@ class Cabanafluids(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("kokkos +wrapper", when="+cuda %gcc")
 
     # Cabana dependencies
-    depends_on("cabana @0.7.0: +serial +threads +grid +silo +hdf5 +mpi")
+    depends_on("cabana @0.7.0: +serial +threads +grid +silo +mpi")
     depends_on("cabana +cuda", when="+cuda")
     depends_on("cabana +rocm", when="+rocm")
     depends_on("cabana +hypre", when="+hypre")
@@ -57,6 +57,9 @@ class Cabanafluids(CMakePackage, CudaPackage, ROCmPackage):
     # Silo dependencies
     depends_on("silo @4.11:")
     depends_on("silo @4.11.1:", when="%cce")  # Eariler silo versions have trouble cce
+
+    # Google test for test cases
+    depends_on("googletest", type="build")
 
     # If we're using CUDA or ROCM, require MPIs be GPU-aware
     conflicts("mpich ~cuda", when="+cuda")
