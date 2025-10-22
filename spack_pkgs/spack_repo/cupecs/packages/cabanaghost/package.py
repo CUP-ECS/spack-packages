@@ -24,7 +24,7 @@ class Cabanaghost(CMakePackage, CudaPackage, ROCmPackage):
     version("develop", branch="develop")
     version("main", branch="main")
 
-    # Dependencies for all CabanaFluids versions - we need cuda-aware MPI
+    # Dependencies for all CabanaGhost versions - we need cuda-aware MPI
     depends_on("mpi")
     with when("+cuda"):
         depends_on("mpich +cuda", when="^[virtuals=mpi] mpich")
@@ -50,9 +50,6 @@ class Cabanaghost(CMakePackage, CudaPackage, ROCmPackage):
     # Silo dependencies
     depends_on("silo @4.11:")
     depends_on("silo @4.11.1:", when="%cce")  # Eariler silo versions have trouble cce
-
-    # Google test dependencies
-    depends_on("googletest", type="build")
 
     # If we're using CUDA or ROCM, require MPIs be GPU-aware
     conflicts("mpich ~cuda", when="+cuda")
