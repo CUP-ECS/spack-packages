@@ -11,7 +11,7 @@ from spack_repo.builtin.packages.kokkos.package import Kokkos
 from spack.package import *
 
 class Cabanafluids(CMakePackage, CudaPackage, ROCmPackage):
-    """FLuid advection benchmark for exploring stream-triggered halo exchanges and sparse matrix methods in the Cabana/Cajita performance portability framework."""
+    """Fluid advection benchmark for exploring stream-triggered halo exchanges and sparse matrix methods in the Cabana/Cajita performance portability framework."""
 
     homepage = "https://github.com/CUP-ECS/CabanaFluids"
     git = "https://github.com/CUP-ECS/CabanaFluids.git"
@@ -31,28 +31,20 @@ class Cabanafluids(CMakePackage, CudaPackage, ROCmPackage):
     variant("hypre", default=False, description="Include support for hypre structured solver in addition to the included reference solver.")
 
     # Dependencies for all CabanaFluids versions
-    depends_on("mpi")
-    with when("+cuda"):
-        depends_on("mpich +cuda", when="^[virtuals=mpi] mpich")
-        depends_on("mvapich +cuda", when="^[virtuals=mpi] mvapich")
-        depends_on("mvapich2 +cuda", when="^[virtuals=mpi] mvapich2")
-        depends_on("openmpi +cuda", when="^[virtuals=mpi] openmpi")
-
-    with when("+rocm"):
-        depends_on("mpich +rocm", when="^[virtuals=mpi] mpich")
-        depends_on("openmpi +rocm", when="^[virtuals=mpi] openmpi")
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
+    depends_on("mpi", type="build")
 
     # Kokkos dependencies
     depends_on("kokkos @4:")
-    depends_on("kokkos +cuda +cuda_lambda +cuda_constexpr", when="+cuda")
-    depends_on("kokkos +rocm", when="+rocm")
-    depends_on("kokkos +wrapper", when="+cuda %gcc")
 
     # Cabana dependencies
-    depends_on("cabana @0.7.0: +serial +threads +grid +silo +mpi")
-    depends_on("cabana +cuda", when="+cuda")
-    depends_on("cabana +rocm", when="+rocm")
-    depends_on("cabana +hypre", when="+hypre")
+    depends_on("cabana @0.7.0: +grid +silo +mpi") # Base cabana features we need
+    depends_on("cabana +hypre", when="+hypre") # If we want hypre
+
+    # Make sure we have the serial backend if we don't have cuda or rocm
+    depends_on("cabana +serial", when="~cuda~rocm")
+    depends_on("cabana +serial", when="~hypre") # serial is reliable if we don't have hypre, too
 
     # Silo dependencies
     depends_on("silo @4.11:")
@@ -65,17 +57,7 @@ class Cabanafluids(CMakePackage, CudaPackage, ROCmPackage):
     conflicts("mpich ~cuda", when="+cuda")
     conflicts("mpich ~rocm", when="+rocm")
     conflicts("openmpi ~cuda", when="+cuda")
-    conflicts("^intel-mpi")  # Heffte won't build with intel MPI because of needed C++ MPI support
     conflicts("^spectrum-mpi", when="^cuda@11.3:")  # cuda-aware spectrum is broken with cuda 11.3:
-
-    # Propagate CUDA and AMD GPU targets to cabana
-    for cuda_arch in CudaPackage.cuda_arch_values:
-        depends_on("cabana cuda_arch=%s" % cuda_arch, when="+cuda cuda_arch=%s" % cuda_arch)
-    for amdgpu_value in ROCmPackage.amdgpu_targets:
-        depends_on(
-            "cabana +rocm amdgpu_target=%s" % amdgpu_value,
-            when="+rocm amdgpu_target=%s" % amdgpu_value,
-        )
 
     # CMake specific build functions
     def cmake_args(self):

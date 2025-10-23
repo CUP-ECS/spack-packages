@@ -25,27 +25,15 @@ class Cabanaghost(CMakePackage, CudaPackage, ROCmPackage):
     version("main", branch="main")
 
     # Dependencies for all CabanaGhost versions - we need cuda-aware MPI
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
     depends_on("mpi")
-    with when("+cuda"):
-        depends_on("mpich +cuda", when="^[virtuals=mpi] mpich")
-        depends_on("mvapich +cuda", when="^[virtuals=mpi] mvapich")
-        depends_on("mvapich2 +cuda", when="^[virtuals=mpi] mvapich2")
-        depends_on("openmpi +cuda", when="^[virtuals=mpi] openmpi")
-
-    with when("+rocm"):
-        depends_on("mpich +rocm", when="^[virtuals=mpi] mpich")
-        depends_on("openmpi +rocm", when="^[virtuals=mpi] openmpi")
 
     # Kokkos dependencies
     depends_on("kokkos @4:")
-    depends_on("kokkos +cuda +cuda_lambda +cuda_constexpr", when="+cuda")
-    depends_on("kokkos +rocm", when="+rocm")
-    depends_on("kokkos +wrapper", when="+cuda %gcc")
 
     # Cabana dependencies
-    depends_on("cabana @0.7.0: +serial +threads +grid +silo +hdf5 +mpi")
-    depends_on("cabana +cuda", when="+cuda")
-    depends_on("cabana +rocm", when="+rocm")
+    depends_on("cabana @0.7.0: +serial +threads +grid +silo +mpi")
 
     # Silo dependencies
     depends_on("silo @4.11:")
@@ -55,17 +43,7 @@ class Cabanaghost(CMakePackage, CudaPackage, ROCmPackage):
     conflicts("mpich ~cuda", when="+cuda")
     conflicts("mpich ~rocm", when="+rocm")
     conflicts("openmpi ~cuda", when="+cuda")
-    conflicts("^intel-mpi")  # Heffte won't build with intel MPI because of needed C++ MPI support
     conflicts("^spectrum-mpi", when="^cuda@11.3:")  # cuda-aware spectrum is broken with cuda 11.3:
-
-    # Propagate CUDA and AMD GPU targets to cabana
-    for cuda_arch in CudaPackage.cuda_arch_values:
-        depends_on("cabana cuda_arch=%s" % cuda_arch, when="+cuda cuda_arch=%s" % cuda_arch)
-    for amdgpu_value in ROCmPackage.amdgpu_targets:
-        depends_on(
-            "cabana +rocm amdgpu_target=%s" % amdgpu_value,
-            when="+rocm amdgpu_target=%s" % amdgpu_value,
-        )
 
     # CMake specific build functions
     def cmake_args(self):
