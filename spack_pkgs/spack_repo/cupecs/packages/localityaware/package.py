@@ -25,7 +25,7 @@ from spack_repo.builtin.build_systems.rocm import ROCmPackage
 
 from spack.package import *
 
-class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
+class Localityaware(CMakePackage, CudaPackage, ROCmPackage):
     """Locality-aware optimizations for standard MPI collectives as well as neighborhood collectives."""
 
     homepage = "https://github.com/mpi-advance"
