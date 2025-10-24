@@ -36,6 +36,7 @@ class Localityaware(CMakePackage, CudaPackage, ROCmPackage):
     license("BSD-3-Clause")
 
     version("1.0", commit="ecfb55c159c5ee6cdc93d1c039d443368fae5ab7")
+    version("develop", branch="develop")
     version("master", branch="master")
     
     depends_on("c", type="build")
