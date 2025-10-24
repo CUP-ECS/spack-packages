@@ -11,10 +11,10 @@ from spack.package import *
 
 
 class Cabana(CMakePackage, CudaPackage, ROCmPackage):
-    """The Exascale Co-Design Center for Particle Applications Toolkit"""
+    """CUP-ECS Fork of Exascale Co-Design Center for Particle Applications Toolkit"""
 
-    homepage = "https://github.com/ECP-copa/Cabana"
-    git = "https://github.com/ECP-copa/Cabana.git"
+    homepage = "https://github.com/CUP-ECS/Cabana"
+    git = "https://github.com/CUP-ECS/Cabana.git"
     url = "https://github.com/ECP-copa/Cabana/archive/0.7.0.tar.gz"
 
     maintainers("junghans", "streeve", "sslattery")
