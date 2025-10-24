@@ -11,10 +11,10 @@ from spack.package import *
 
 
 class Cabana(CMakePackage, CudaPackage, ROCmPackage):
-    """The Exascale Co-Design Center for Particle Applications Toolkit"""
+    """CUP-ECS Fork of Exascale Co-Design Center for Particle Applications Toolkit"""
 
-    homepage = "https://github.com/ECP-copa/Cabana"
-    git = "https://github.com/ECP-copa/Cabana.git"
+    homepage = "https://github.com/CUP-ECS/Cabana"
+    git = "https://github.com/CUP-ECS/Cabana.git"
     url = "https://github.com/ECP-copa/Cabana/archive/0.7.0.tar.gz"
 
     maintainers("junghans", "streeve", "sslattery")
@@ -50,7 +50,6 @@ class Cabana(CMakePackage, CudaPackage, ROCmPackage):
     variant("testing", default=False, description="Build unit tests")
     variant("examples", default=False, description="Build tutorial examples")
     variant("performance_testing", default=False, description="Build performance tests")
-    variant("mpiadvance", default=False, description="Build with mpiadvance communication backend")
 
     depends_on("c", type="build", when="+mpi")
     depends_on("cxx", type="build")
@@ -59,16 +58,11 @@ class Cabana(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("cmake@3.16:", type="build", when="@0.5.0:")
 
     depends_on("googletest", type="build", when="+testing")
-    _versions = {":0.2": "-legacy", "0.3:": "@3.1:", "0.4:": "@3.2:", "0.6:": "@3.7:"}
+    _versions = {"0.3:": "@3.1:", "0.4:": "@3.2:", "0.6:": "@3.7:"}
     for _version in _versions:
         _kk_version = _versions[_version]
         for _backend in _kokkos_backends:
-            if _kk_version == "-legacy" and _backend == "pthread":
-                _kk_spec = "kokkos-legacy+pthreads"
-            elif _kk_version == "-legacy" and _backend not in ["serial", "openmp", "cuda"]:
-                continue
-            # Handled separately by Cuda/ROCmPackage below
-            elif _backend == "cuda" or _backend == "hip":
+            if _backend == "cuda" or _backend == "hip":
                 continue
             else:
                 _kk_spec = "kokkos{0}+{1}".format(_kk_version, _backend)
@@ -99,15 +93,15 @@ class Cabana(CMakePackage, CudaPackage, ROCmPackage):
     # Dependencies for subpackages
     depends_on("all-library", when="@0.5.0:+all")
     depends_on("arborx", when="@0.3.0:+arborx")
-    depends_on("hypre-cmake@2.22.0:", when="@0.4.0:+hypre")
-    depends_on("hypre-cmake@2.22.1:", when="@0.5.0:+hypre")
+    depends_on("hypre_cmake@2.22.0:", when="@0.4.0 +hypre")
+    depends_on("hypre_cmake@2.22.1:", when="@0.5.0:0.7.0 +hypre")
+    depends_on("hypre@3.0.0:", when="@0.8.0:+hypre")
     depends_on("heffte@2.0.0", when="@0.4.0+heffte")
     depends_on("heffte@2.1.0", when="@0.5.0+heffte")
     depends_on("heffte@2.3.0:", when="@0.6.0:+heffte")
     depends_on("silo", when="@0.5.0:+silo")
     depends_on("hdf5", when="@0.6.0:+hdf5")
     depends_on("mpi", when="+mpi")
-    depends_on("mpiadvance", when="+mpiadvance")
 
     # CMakeLists.txt of Cabana>=0.6 always enables HDF5 with CMake >= 3.26 (not changed post-0.6):
     conflicts("~hdf5", when="@0.6.0: ^cmake@3.26:")
