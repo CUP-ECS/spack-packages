@@ -50,7 +50,6 @@ class Cabana(CMakePackage, CudaPackage, ROCmPackage):
     variant("testing", default=False, description="Build unit tests")
     variant("examples", default=False, description="Build tutorial examples")
     variant("performance_testing", default=False, description="Build performance tests")
-    variant("mpi_advance", default=False, description="Build with MPI Advance communication backend")
 
     depends_on("c", type="build", when="+mpi")
     depends_on("cxx", type="build")
@@ -103,7 +102,6 @@ class Cabana(CMakePackage, CudaPackage, ROCmPackage):
     depends_on("silo", when="@0.5.0:+silo")
     depends_on("hdf5", when="@0.6.0:+hdf5")
     depends_on("mpi", when="+mpi")
-    depends_on("mpiadvance", when="+mpi_advance")
 
     # CMakeLists.txt of Cabana>=0.6 always enables HDF5 with CMake >= 3.26 (not changed post-0.6):
     conflicts("~hdf5", when="@0.6.0: ^cmake@3.26:")
@@ -132,7 +130,7 @@ class Cabana(CMakePackage, CudaPackage, ROCmPackage):
     def cmake_args(self):
         options = [self.define_from_variant("BUILD_SHARED_LIBS", "shared")]
 
-        enable = ["CAJITA", "TESTING", "EXAMPLES", "PERFORMANCE_TESTING", "MPI_ADVANCE"]
+        enable = ["CAJITA", "TESTING", "EXAMPLES", "PERFORMANCE_TESTING"]
         require = ["ALL", "ARBORX", "HEFFTE", "HYPRE", "SILO", "HDF5"]
 
         # These variables were removed in 0.3.0 (where backends are
