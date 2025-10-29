@@ -92,53 +92,42 @@ class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
             
         if self.spec.satisfies("+st"):
             print("ST SET")
-            args.append("-DMPIA_ST=ON")
-            
+            args.append("-DMPIA_ST=ON")          
         else:
             print("ST NOT SET") 
             
         if self.spec.satisfies("+la"):
             print("LA SET")
             args.append("-DMPIA_LA=ON")
-            
-            if self.spec.satisfies("+cuda"):
-                args.append("-DUSE_CUDA=ON")
-                print(self.spec.variants["cuda_arch"].value)
-                mystring = ', '.join(map(str, self.spec.variants["cuda_arch"].value)) 
-                print(mystring)
-                cuda_val = "-DCMAKE_CUDA_ARCHITECTURES=" + mystring
-                print(cuda_val)
-                args.append(cuda_val)
-                
         else:
             print("LA NOT SET")   
         
         #add in tests if requested
         if self.spec.satisfies("+tests"):
             print("TESTS TO BE BUILT")
-            args.append("-DBUILD_EXAMPLES=ON")
-            args.append("-DENABLE_UNIT_TESTS=ON")
-        args.append("-DSPACK=ON")
+            args.append("-BUILD_TESTS=ON")        #for MPIPCL
+            args.append("-DENABLE_UNIT_TESTS=ON") #for locality_aware
+        args.append("-DSPACK=ON")                 #change to spack install location instead of default. 
         
-        # If Cuda add flags to activate cuda build options
+        # If using CUDA, add flags to activate CUDA build options and arch. 
         if self.spec.satisfies("+cuda"):
             print("BUILDING CUDA SUPPORT")
+            mystring = ', '.join(map(str, self.spec.variants["cuda_arch"].value)) 
+            print("detected arch values:" + mystring)
+            cuda_val = "-DCMAKE_CUDA_ARCHITECTURES=" + mystring
+            args.append(cuda_val)
+            #turn on cuda flags for each of the sub-modules. 
             if self.spec.satisfies("la"):
                 args.append("-DUSE_CUDA=ON")
-                args.append("-DCMAKE_CUDA_ARCHITECTURES=\"75\"")
-            if self.spec.satisfies("st"):\
+                #args.append("-DCMAKE_CUDA_ARCHITECTURES=\"75\"")
+            if self.spec.satisfies("st"):
                 args.append("-DUSE_CUDA_BACKEND=ON")
           
-        
-        # Use hipcc as the c compiler if we are compiling for rocm. Doing it this way
-        # keeps the wrapper insted of changeing CMAKE_CXX_COMPILER keeps the spack wrapper
-        # and the rpaths it sets for us from the underlying spec.
+        # If using HIP or ROCM, use hpicc instead of changing the CMAKE_CXX_COMPILER. 
+        # Doing this perserves the spack wrapper and the integrated rpath setting from 
+        # the spec. 
         if self.spec.satisfies("+rocm"):
             env["SPACK_CXX"] = self.spec["hip"].hipcc
-            if self.spec.satisfies("la"):
-                args.append("-DUSE_HIP=ON")
-            if self.spec.satisfies("st"):
-                args.append("-DUSE_HIP_BACKEND=ON")
         # If we're building with cray mpich, we need to make sure we get the GTL library for
         # gpu-aware MPI
         if self.spec.satisfies("+rocm ^cray-mpich"):
@@ -152,8 +141,11 @@ class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
                 "-DCMAKE_EXE_LINKER_FLAGS=-Wl,-rpath={0} -L{0} -lmpi_gtl_cuda".format(gtl_dir)
             )
         
-       
-        
+        #Set hip flags in the submodules
+        if self.spec.satisfies("la"):
+            args.append("-DUSE_HIP=ON")
+        if self.spec.satisfies("st"):
+            args.append("-DUSE_HIP_BACKEND=ON")
         return args
 
     @run_after('install')

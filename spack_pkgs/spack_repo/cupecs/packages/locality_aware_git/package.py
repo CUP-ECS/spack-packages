@@ -31,8 +31,7 @@ class LocalityAwareGit(CMakePackage, CudaPackage, ROCmPackage):
     """FIXME: Put a proper description of your package here."""
     """Locality-aware optimizations for standard MPI collectives as well as neighborhood collectives."""
 
-    git = "git@github.com:aworley16/locality_aware.git"
-    branch = "experimental"
+    git = "git@github.com:mpi-advance/locality_aware.git"
     # FIXME: Add a list of GitHub accounts to
     # notify when the package is updated.
     # maintainers("github_user1", "github_user2")
@@ -40,8 +39,8 @@ class LocalityAwareGit(CMakePackage, CudaPackage, ROCmPackage):
 
     license("BSD-3-Clause")
 
-    version("1.0", commit="ecfb55c159c5ee6cdc93d1c039d443368fae5ab7")
-    version("master", branch="master")
+    version("1.2", branch="develop")
+    
     
     depends_on("c", type="build")
     depends_on("cxx", type="build")
