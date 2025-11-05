@@ -52,7 +52,7 @@ class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
     variant("st",  default=True, description="Build Stream-triggering library")
     variant("la",  default=True, description="Build Stream-triggering library")
     variant("tests", default=False, description="Build examples and test programs")
-    # variant("+cuda", default=True, description="Build MPIPCL library")
+    variant("+cuda", default=False, description="Build MPIPCL library")
 
     # MPI dependencies
     depends_on("mpi")
