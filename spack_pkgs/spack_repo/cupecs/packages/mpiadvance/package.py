@@ -31,13 +31,13 @@ class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
 
     homepage = "https://github.com/mpi-advance"
     url =" https://github.com/mpi-advance/mpi-advance.git"
-    git = "git@github.com:mpi-advance/mpi-advance.git"
+    git = "git@github.com:aworley16/Advance_testing.git"
 
     maintainers("aworley16", "JStewart28")
 
     license("BSD-3-Clause")
     
-    version("test", branch="experimental", submodules=True)
+    version("main", submodules=True)
     
     depends_on("c", type="build")
     depends_on("cxx", type="build")
@@ -52,7 +52,7 @@ class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
     variant("st",  default=True, description="Build Stream-triggering library")
     variant("la",  default=True, description="Build Stream-triggering library")
     variant("tests", default=False, description="Build examples and test programs")
-    variant("+cuda", default=False, description="Build MPIPCL library")
+    variant("cuda", default=False, description="Build MPIPCL library")
 
     # MPI dependencies
     depends_on("mpi")
@@ -60,12 +60,12 @@ class Mpiadvance(CMakePackage, CudaPackage, ROCmPackage):
         depends_on("mpich +cuda", when="^[virtuals=mpi] mpich")
         depends_on("mvapich +cuda", when="^[virtuals=mpi] mvapich")
         depends_on("mvapich2 +cuda", when="^[virtuals=mpi] mvapich2")
-        depends_on("mvapich2-gdr +cuda", when="^[virtuals=mpi] mvapich2-gdr")
+        #depends_on("mvapich2-gdr +cuda", when="^[virtuals=mpi] mvapich2-gdr")
         depends_on("openmpi +cuda", when="^[virtuals=mpi] openmpi")
 
     with when("+rocm"):
         depends_on("mpich +rocm", when="^[virtuals=mpi] mpich")
-        depends_on("mvapich2-gdr +rocm", when="^[virtuals=mpi] mvapich2-gdr")
+        #depends_on("mvapich2-gdr +rocm", when="^[virtuals=mpi] mvapich2-gdr")
     
     conflicts("+cuda", when="cuda_arch=none")
     conflicts("+rocm", when="amdgpu_target=none")
