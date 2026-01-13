@@ -50,6 +50,7 @@ class Cabana(CMakePackage, CudaPackage, ROCmPackage):
     variant("testing", default=False, description="Build unit tests")
     variant("examples", default=False, description="Build tutorial examples")
     variant("performance_testing", default=False, description="Build performance tests")
+    variant("locality_aware", default=False, description="Build MPI Advance locality aware support")
 
     depends_on("c", type="build", when="+mpi")
     depends_on("cxx", type="build")
@@ -113,6 +114,10 @@ class Cabana(CMakePackage, CudaPackage, ROCmPackage):
     conflicts("+cajita ~mpi")
     conflicts("+grid ~mpi")
 
+    # MPI advance llicaty aware support
+    depends_on("locality_aware", when="+locality_aware +mpi")
+    conflicts("+locality_aware ~mpi")
+
     # The +grid does not support gcc>=13 (missing iostream/cstdint includes):
     conflicts("+grid", when="@:0.6 %gcc@13:")
 
@@ -146,6 +151,9 @@ class Cabana(CMakePackage, CudaPackage, ROCmPackage):
         # Cajita was renamed Grid in 0.6
         if self.spec.satisfies("@0.6.0:"):
             enable += ["GRID"]
+
+        if self.spec.satisfies("@0.8.0:"):
+            enable += ["LOCALITY_AWARE"]
 
         for category, cname in zip([enable, require], ["ENABLE", "REQUIRE"]):
             for var in category:
