@@ -14,11 +14,12 @@ class Amg2023(CMakePackage, CudaPackage, ROCmPackage):
     arising from problems on unstructured grids. The driver provided here
     builds linear systems for various 3-dimensional problems. It requires
     an installation of hypre-2.27.0 or higher.
+    ** This particular version is the COMPASS PSAAP-IV project version **
     """
 
     tags = ["benchmark"]
     homepage = "https://github.com/LLNL/AMG2023"
-    git = "https://github.com/LLNL/AMG2023.git"
+    git = "https://github.com/COMPASS-PSAAP/AMG2023.git"
 
     license("Apache-2.0")
 
